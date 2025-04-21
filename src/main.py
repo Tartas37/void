@@ -2,6 +2,7 @@ from parser import tokenize, parse
 from generator import generate_c
 
 from sys import argv
+from os.path import splitext
 
 def main():
 
@@ -26,14 +27,12 @@ def main():
     # generating C code
     try:
         c_code = generate_c(ast)
-        print(c_code)
     except Exception as e:
         print("Error while generating c code")
         raise(e)
 
     # writing C code as output
-    with open("output.c", "w") as file:
-        print(c_code)
+    with open(splitext(argv[1])[0] + ".c", "w") as file:
         file.write(c_code)
 
     print("Translation to C was complited successfuly!")

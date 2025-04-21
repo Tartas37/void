@@ -12,8 +12,27 @@ def generate_c(ast):
         elif statement[0] == "return":
             c_code += f'    return {statement[1][1]};\n'
         elif statement[0] == "assign":
-            c_code += f'    int {statement[1]} = {statement[2][1]};\n'
+            if statement[2][0] == "number":
+                c_code += f'    int {statement[1]} = {statement[2][1]};\n'
         else:
             raise SyntaxError("Unknown statement syntax!")
 
     return c_code + "}\n"
+        #
+        # ("PRINT", r"print"),
+        # ("RETURN", r"return"),
+        # ("FUN", r"function"),
+        #
+        # ("NUMBER", r"\d+"),
+        # ("IDENT", r"[a-zA-Z_]\w*"),
+        #
+        # ("PLUS", r"\+"),
+        # ("MINUS", r"\-"),
+        # ("MULT", r"\*"),
+        # ("DIV", r"\/"),
+        #
+        # ("EQUAL", r"="),
+        #
+        # ("LPAREN", r"\("),
+        # ("RPAREN", r"\)"),
+        #
