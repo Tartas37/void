@@ -16,8 +16,6 @@ def main():
         print("Error while generating tokens")
         raise(e)
 
-    print(tokens)
-
     # parsing tokens
     try:
         ast = parse(tokens)
@@ -25,17 +23,17 @@ def main():
         print("Error while parsing tokens")
         raise(e)
 
-    print(ast)
-
     # generating C code
     try:
         c_code = generate_c(ast)
+        print(c_code)
     except Exception as e:
         print("Error while generating c code")
         raise(e)
 
     # writing C code as output
     with open("output.c", "w") as file:
+        print(c_code)
         file.write(c_code)
 
     print("Translation to C was complited successfuly!")
