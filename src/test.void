@@ -1,3 +1,2 @@
-x = 6;
-print(x);
-return 69;
+greet = "Hello world!";
+print(greet);
