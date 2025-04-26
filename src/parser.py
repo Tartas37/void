@@ -1,23 +1,26 @@
 from re import findall, fullmatch
 
+
 def tokenize(code):
     TOKENS = (
         ("PRINT", r"print"),
         ("RETURN", r"return"),
         ("FUN", r"function"),
-
+        ("IF", r"if"),
+        ("ELSE", r"else"),
+        ("WHILE", r"while"),
+        ("FOR", r"for"),
         ("PLUS", r"\+"),
         ("MINUS", r"\-"),
         ("MULT", r"\*"),
         ("DIV", r"\/"),
-
         ("EQUAL", r"="),
-
         ("LPAREN", r"\("),
         ("RPAREN", r"\)"),
-
+        ("LBRACE", r"\{"),
+        ("RBRACE", r"\}"),
         ("SEMICOLON", r";"),
-
+        ("COMMA", r","),
         ("STRING", r'"[^"\n]*"'),
         ("NUMBER", r"\d+"),
         ("IDENT", r"[a-zA-Z_]\w*"),
@@ -31,13 +34,14 @@ def tokenize(code):
 
     output = []
 
-    tokens = findall(r'"[^"\n]*"|\w+|==|[-+*/=;()]', code)
+    tokens = findall(r'"[^"\n]*"|\w+|==|[-+*/=;(),{}]', code)
 
     for word in tokens:
         token = find_token(word)
         output.append((token, word))
 
     return output
+
 
 def parse(tokens):
     pos = 0
@@ -74,7 +78,7 @@ def parse(tokens):
             return ("number", int(value))
         elif tok_type == "STRING":
             pos += 1
-            return ("STRING", value[1:-1])
+            return ("string", value[1:-1])
         elif tok_type == "IDENT":
             pos += 1
             return ("ident", value)
@@ -106,9 +110,23 @@ def parse(tokens):
                 raise SyntaxError("Expected function name")
             pos += 1
             expect("LPAREN")
+            params = []
+            while current()[0] == "IDENT":
+                params.append(current()[1])
+                pos += 1
+                if current()[0] == "COMMA":
+                    pos += 1
+                elif current()[0] == "RPAREN":
+                    break
+                else:
+                    raise SyntaxError("Expected comma or closing parenthesis")
             expect("RPAREN")
-            expect("SEMICOLON")
-            return ("function", name, [])
+            expect("LBRACE")
+            body = []
+            while current()[0] != "RBRACE":
+                body.append(parse_statement())
+            expect("RBRACE")
+            return ("function", name, params, body)
 
         elif current()[0] == "IDENT":
             name = current()[1]
@@ -118,6 +136,35 @@ def parse(tokens):
             expect("SEMICOLON")
             return ("assign", name, expr)
 
+        elif match("IF"):
+            expect("LPAREN")
+            condition = parse_expression()
+            expect("RPAREN")
+            expect("LBRACE")
+            body = []
+            while current()[0] != "RBRACE":
+                body.append(parse_statement())
+            expect("RBRACE")
+            if match("ELSE"):
+                expect("LBRACE")
+                else_body = []
+                while current()[0] != "RBRACE":
+                    else_body.append(parse_statement())
+                expect("RBRACE")
+                return ("if", condition, body, else_body)
+            return ("if", condition, body)
+
+        elif match("WHILE"):
+            expect("LPAREN")
+            condition = parse_expression()
+            expect("RPAREN")
+            expect("LBRACE")
+            body = []
+            while current()[0] != "RBRACE":
+                body.append(parse_statement())
+            expect("RBRACE")
+            return ("while", condition, body)
+
         else:
             raise SyntaxError(f"Unknown statement: {current()}")
 
@@ -125,4 +172,3 @@ def parse(tokens):
     while current()[0] != "EOF":
         ast.append(parse_statement())
     return ast
-

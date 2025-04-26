@@ -1,2 +1,7 @@
 src/__pycache__/
+src/pyproject.toml
+src/.ruff_cache/
+
 src/test.void
+src/a.out
+src/test.c
